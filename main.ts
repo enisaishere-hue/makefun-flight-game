@@ -49,7 +49,10 @@ writeFileSync(
 );
 
 // The grader collects the outputs as another user, so every file it reads
-// must be world-readable and every folder world-enterable.
+// must be world-readable and every folder world-enterable. Only the contents
+// of the output folder are touched: the folder itself belongs to the grader,
+// and changing its mode as another user is refused (EPERM) and kills the run
+// after everything was already written.
 function makeReadable(path) {
   const info = statSync(path);
   if (info.isDirectory()) {
@@ -59,6 +62,6 @@ function makeReadable(path) {
     chmodSync(path, 0o644);
   }
 }
-makeReadable(out);
+for (const entry of readdirSync(out)) makeReadable(join(out, entry));
 
 console.log(`handed in ${join(out, 'dossier.json')}`);
